@@ -13,7 +13,6 @@
             <div class="logo">BLUE BARRIER</div>
             <ul class="nav-links">
                 <li><a href="#home">HOME</a></li>
-                <li><a href="#service">SERVICE</a></li>
                 <li><a href="#about">ABOUT</a></li>
                 <li><a href="#news">NEWS</a></li>
             </ul>
@@ -205,6 +204,71 @@
             </div>
         </div>
     </section>
+    <!-- Coastal Forecast (India-only coastal belt) -->
+<section id="coastal-forecast" class="coastal-forecast-section">
+  <div class="coastal-forecast-container">
+    <h2 class="section-title">Coastal Threat Forecast (India)</h2>
+
+    <!-- Top stats -->
+    <div class="cf-stats">
+      <div class="cf-stat">
+        <div class="cf-number" id="cfForecastCount">0</div>
+        <div class="cf-label">Coastal Threat Forecast</div>
+      </div>
+      <div class="cf-stat">
+        <div class="cf-number" id="cfPopulationAtRisk">0</div>
+        <div class="cf-label">Population at Risk</div>
+      </div>
+      <div class="cf-stat">
+        <div class="cf-number" id="cfDaysWindow">0</div>
+        <div class="cf-label">Forecast Window (days)</div>
+      </div>
+    </div>
+
+    <!-- Map + legend -->
+    <div class="cf-map-wrap">
+      <!-- Lightweight SVG outline of India with highlighted coasts -->
+      <svg class="india-map" viewBox="0 0 700 800" aria-label="India Coastal Forecast Map">
+        <!-- Simple land silhouette (stylized) -->
+        <path class="land"
+          d="M 410 50 L 510 140 L 520 210 L 560 260 L 590 320 L 560 360 L 500 420 L 510 470 L 490 520 L 450 560 L 460 610 L 430 650 L 360 680 L 300 650 L 260 590 L 220 540 L 200 480 L 220 430 L 230 370 L 210 320 L 220 280 L 260 240 L 310 200 L 360 150 Z"
+        />
+        <!-- West coast band -->
+        <path class="coast west"
+          d="M 230 370 L 210 320 L 220 280 L 260 240 L 310 200 L 330 220 L 300 250 L 280 280 L 260 330 L 255 360 Z"
+        />
+        <!-- East coast band -->
+        <path class="coast east"
+          d="M 520 210 L 560 260 L 590 320 L 560 360 L 500 420 L 510 470 L 490 520 L 470 510 L 480 460 L 520 400 L 545 360 L 560 330 L 540 290 L 510 250 Z"
+        />
+        <!-- Bay of Bengal markers -->
+        <g id="cfMarkers"></g>
+      </svg>
+
+      <div class="cf-legend">
+        <span><i class="dot high"></i> High</span>
+        <span><i class="dot med"></i> Medium</span>
+        <span><i class="dot low"></i> Low</span>
+      </div>
+    </div>
+
+    <!-- Historical events table -->
+    <div class="cf-history">
+      <div class="cf-history-head">
+        <h3>Historical Coastal Events</h3>
+        <small>Source: demo data for hackathon view</small>
+      </div>
+      <table class="cf-table" id="cfHistoryTable" aria-label="Historical coastal events">
+        <thead>
+          <tr>
+            <th>#</th><th>Event</th><th>Region</th><th>Date/Window</th><th>Severity</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody><!-- filled by JS --></tbody>
+      </table>
+    </div>
+  </div>
+</section>
 
     <!-- Interactive Dashboard -->
     <section id="dashboard" class="dashboard-section">
