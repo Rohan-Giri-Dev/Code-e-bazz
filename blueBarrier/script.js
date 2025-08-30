@@ -434,3 +434,229 @@
   animateCounters();
 
 })();
+// ====== Coastal Threat Map (Leaflet) ======
+(function () {
+  // --- tiny coastal nodes dataset (extend as needed) ---
+  const COAST_NODES = [
+    { id:"kandla", name:"Kandla / Kutch", state:"Gujarat",        lat:23.05,  lng:70.22, popAtRisk:320000 },
+    { id:"mumbai", name:"Mumbai Coast",   state:"Maharashtra",    lat:19.076, lng:72.877, popAtRisk:2500000 },
+    { id:"ratnagiri", name:"Ratnagiri",   state:"Maharashtra",    lat:16.991, lng:73.31,  popAtRisk:240000 },
+    { id:"goa",    name:"Mormugao",       state:"Goa",            lat:15.389, lng:73.815, popAtRisk:180000 },
+    { id:"karwar", name:"Karwar",         state:"Karnataka",      lat:14.813, lng:74.129, popAtRisk:160000 },
+    { id:"kochi",  name:"Kochi",          state:"Kerala",         lat:9.931,  lng:76.267, popAtRisk:850000 },
+    { id:"tvm",    name:"Thiruvananthapuram", state:"Kerala",     lat:8.524,  lng:76.936, popAtRisk:520000 },
+    { id:"tuticorin", name:"Thoothukudi", state:"Tamil Nadu",     lat:8.764,  lng:78.134, popAtRisk:410000 },
+    { id:"chennai", name:"Chennai",       state:"Tamil Nadu",     lat:13.0827,lng:80.2707,popAtRisk:2900000 },
+    { id:"pdy",    name:"Puducherry",     state:"Puducherry",     lat:11.916, lng:79.812, popAtRisk:240000 },
+    { id:"nellore", name:"Nellore",       state:"Andhra Pradesh", lat:14.4426,lng:79.9865,popAtRisk:390000 },
+    { id:"vizag",  name:"Visakhapatnam",  state:"Andhra Pradesh", lat:17.6868,lng:83.2185,popAtRisk:1600000 },
+    { id:"kakinada", name:"Kakinada",     state:"Andhra Pradesh", lat:16.9891,lng:82.2475,popAtRisk:470000 },
+    { id:"gopalpur", name:"Gopalpur",     state:"Odisha",         lat:19.263, lng:84.92,  popAtRisk:120000 },
+    { id:"paradip", name:"Paradip",       state:"Odisha",         lat:20.316, lng:86.611, popAtRisk:210000 },
+    { id:"digha",  name:"Digha",          state:"West Bengal",    lat:21.626, lng:87.509, popAtRisk:140000 },
+    { id:"haldia", name:"Haldia",         state:"West Bengal",    lat:22.066, lng:88.069, popAtRisk:670000 },
+    { id:"diamond",name:"Diamond Harbour",state:"West Bengal",    lat:22.191, lng:88.190, popAtRisk:360000 },
+    { id:"portblair", name:"Port Blair",  state:"Andaman & Nicobar", lat:11.623, lng:92.726, popAtRisk:140000 }
+  ];
+
+  // --- seeded random (so the same place yields stable demo numbers) ---
+  function hash(s){let h=0; for(let i=0;i<s.length;i++){h=(h<<5)-h+s.charCodeAt(i); h|=0;} return Math.abs(h);}
+  function rng(seed){let x = seed % 2147483647; if (x <= 0) x += 2147483646; return ()=> (x = x * 16807 % 2147483647) / 2147483647; }
+
+  // --- simple "training features" generator (replace with your real model/data) ---
+  function getFeaturesForNode(nodeId, dayIdx, r) {
+    // dayIdx: 0..6 (today..+6)
+    // Return plausible drivers: wind (km/h), tide (m), humidity (%)
+    const base =  r()*0.7 + (nodeId.length % 3)*0.15;
+    return {
+      wind: Math.round(20 + 60*base + dayIdx*0.7),      // 20–100
+      tide: +(0.5 + 2.8*base).toFixed(2),               // 0.5–3.3 m
+      humidity: Math.round(60 + 40*base),               // 60–100 %
+      stormProb: +(0.05 + 0.6*base).toFixed(2)          // 0.05–0.65
+    };
+  }
+
+  // --- risk model (transparent & tweakable) ---
+  function riskScore(features){
+    // weights: wind 0.4, tide 0.3, humidity 0.2, stormProb 0.1
+    const w = features.wind/100, t = features.tide/3.5, h = features.humidity/100, s = features.stormProb;
+    const score = 0.4*w + 0.3*t + 0.2*h + 0.1*s;        // 0–1.0+
+    return Math.min(1, score);
+  }
+  function band(score){ return score >= 0.66 ? "Alert" : score >= 0.4 ? "Watch" : "Safe"; }
+  function bandClass(b){ return b==="Alert"?"badge-alert":b==="Watch"?"badge-watch":"badge-safe"; }
+  function colorFor(b){ return b==="Alert"?"#ff4d4f":b==="Watch"?"#ffb020":"#2ecc71"; }
+
+  // --- 7-day forecast + synthetic history ---
+  function makeForecast(node){
+    const seed = hash(node.id);
+    const r = rng(seed);
+    const days = [];
+    for (let i=0;i<7;i++){
+      const f = getFeaturesForNode(node.id, i, r);
+      const score = riskScore(f);
+      const b = band(score);
+      days.push({
+        day: new Date(Date.now()+ i*24*3600*1000),
+        band: b,
+        color: colorFor(b),
+        drivers: f,
+        score: +score.toFixed(2)
+      });
+    }
+    return days;
+  }
+  function makeHistory(node){
+    const seed = hash(node.id+"-history");
+    const r = rng(seed);
+    const labels = ["Storm surge","Cyclone warning","High tide flooding","Tsunami advisory","Coastal erosion"];
+    const notes  = [
+      "Wind ↑ & Tide ↑",
+      "Humidity ↑, Wind ↑",
+      "Tide peak around midnight",
+      "Unusual swell patterns",
+      "Monsoon + rough sea"
+    ];
+    const rows = [];
+    for (let k=0;k<6;k++){
+      const d = new Date(Date.now() - (k+1)*7*24*3600*1000);
+      rows.push({
+        date: d.toISOString().slice(0,10),
+        label: labels[Math.floor(r()*labels.length)],
+        note: notes[Math.floor(r()*notes.length)]
+      });
+    }
+    return rows;
+  }
+
+  // --- Leaflet map ---
+  const map = L.map('crMap', { zoomControl: true, attributionControl: false })
+               .setView([20.5937, 78.9629], 5); // India center
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19
+  }).addTo(map);
+
+  // --- UI refs ---
+  const elPlace   = document.getElementById('crPlace');
+  const elStatus  = document.getElementById('crStatus');
+  const elWindow  = document.getElementById('crWindow');
+  const elNearest = document.getElementById('crNearest');
+  const elPop     = document.getElementById('crPop');
+  const tbForecast= document.querySelector('#crForecastTable tbody');
+  const tbHistory = document.querySelector('#crHistoryTable tbody');
+
+  function km(a,b){ return map.distance([a.lat, a.lng], [b.lat, b.lng]) / 1000; }
+  function nearestNode(lat, lng){
+    let best = null, dmin = Infinity;
+    for (const n of COAST_NODES){
+      const d = map.distance([lat,lng],[n.lat,n.lng]);
+      if (d < dmin){ dmin = d; best = n; }
+    }
+    return { node: best, distKm: dmin/1000 };
+  }
+
+  function renderSelection(node, clickedLatLng){
+    const forecast = makeForecast(node);
+    const hist = makeHistory(node);
+
+    // Status = today's band
+    const today = forecast[0];
+    elPlace.textContent = `${node.name}, ${node.state}`;
+    elStatus.textContent = today.band;
+    elStatus.className = `badge ${bandClass(today.band)}`;
+    elWindow.textContent = "7 days";
+    elNearest.textContent = `${node.name}`;
+    elPop.textContent = node.popAtRisk.toLocaleString('en-IN');
+
+    // Forecast table
+    tbForecast.innerHTML = "";
+    forecast.forEach(d=>{
+      const dayName = d.day.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short' });
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${dayName}</td>
+        <td><span style="font-weight:700; color:${d.color}">${d.band}</span></td>
+        <td>Wind ${d.drivers.wind} km/h · Tide ${d.drivers.tide} m · Humid ${d.drivers.humidity}%</td>
+      `;
+      tbForecast.appendChild(tr);
+    });
+
+    // History table
+    tbHistory.innerHTML = "";
+    hist.forEach(h=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${h.date}</td><td>${h.label}</td><td>${h.note}</td>`;
+      tbHistory.appendChild(tr);
+    });
+
+    // If selection came from click, add/refresh a marker ping
+    if (clickedLatLng){
+      if (window.__crClickMarker) map.removeLayer(window.__crClickMarker);
+      window.__crClickMarker = L.circleMarker(clickedLatLng, {
+        radius: 7, weight: 2, color: today.color, fillColor: today.color, fillOpacity: 0.4
+      }).addTo(map).bindPopup(`<strong>${node.name}</strong><br/>Status: <b style="color:${today.color}">${today.band}</b>`).openPopup();
+    }
+  }
+
+  // Add coastal nodes as color-coded markers (band = today)
+  const markersLayer = L.layerGroup().addTo(map);
+  COAST_NODES.forEach(n=>{
+    const todayBand = makeForecast(n)[0].band;
+    const marker = L.circleMarker([n.lat, n.lng], {
+      radius: 6,
+      weight: 1.5,
+      color: colorFor(todayBand),
+      fillColor: colorFor(todayBand),
+      fillOpacity: .6
+    })
+    .addTo(markersLayer)
+    .bindTooltip(`${n.name}: ${todayBand}`, { direction:'top' })
+    .on('click', () => renderSelection(n, [n.lat, n.lng]));
+  });
+
+  // Map click anywhere -> snap to nearest coastal node within 120 km
+  map.on('click', (e)=>{
+    const { lat, lng } = e.latlng;
+    const near = nearestNode(lat, lng);
+    if (near && near.distKm <= 120) {
+      renderSelection(near.node, e.latlng);
+    } else {
+      elPlace.textContent = "Outside coastal buffer";
+      elStatus.textContent = "—"; elStatus.className = "badge badge-muted";
+      elNearest.textContent = "—"; elPop.textContent = "—";
+      tbForecast.innerHTML = ""; tbHistory.innerHTML = "";
+    }
+  });
+
+  // --- PIN code search (Nominatim) ---
+  async function locateByPincode(pin){
+    const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&countrycodes=in&q=${encodeURIComponent(pin)}`;
+    const res = await fetch(url, { headers: { 'Accept-Language':'en' }});
+    const data = await res.json();
+    if (!Array.isArray(data) || data.length===0) throw new Error("PIN not found");
+    // take the best hit
+    const { lat, lon } = data[0];
+    const latNum = parseFloat(lat), lonNum = parseFloat(lon);
+    map.setView([latNum, lonNum], 9);
+    const near = nearestNode(latNum, lonNum);
+    if (near && near.distKm <= 120) {
+      renderSelection(near.node, [latNum, lonNum]);
+    } else {
+      elPlace.textContent = "PIN located (inland) — nearest coast >120 km";
+      elStatus.textContent = "—"; elStatus.className = "badge badge-muted";
+      elNearest.textContent = "—"; elPop.textContent = "—";
+      tbForecast.innerHTML = ""; tbHistory.innerHTML = "";
+    }
+  }
+
+  document.getElementById('crFindBtn').addEventListener('click', async ()=>{
+    const pin = (document.getElementById('crPincode').value || "").trim();
+    if (pin.length !== 6) { alert("Enter a valid 6-digit PIN code"); return; }
+    try { await locateByPincode(pin); } 
+    catch(e){ alert("Could not locate that PIN code. Try another."); }
+  });
+
+  // Initial focus: zoom to India; preselect Chennai for demo
+  const chennai = COAST_NODES.find(n=>n.id==="chennai");
+  if (chennai) renderSelection(chennai, [chennai.lat, chennai.lng]);
+})();

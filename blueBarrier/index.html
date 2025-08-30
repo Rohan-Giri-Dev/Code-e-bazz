@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BlueBarrier - Coastal Threat Monitoring Platform</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Leaflet CSS -->
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin=""
+/>
+
 </head>
 <body>
     <!-- Header -->
@@ -16,7 +24,7 @@
                 <li><a href="#about">ABOUT</a></li>
                 <li><a href="#news">NEWS</a></li>
             </ul>
-            <a href="#login" class="login-btn">LOGIN</a>
+            <a href="./login.html" class="login-btn">LOGIN</a>
             <div class="mobile-menu-toggle">
                 <span></span>
                 <span></span>
@@ -204,71 +212,58 @@
             </div>
         </div>
     </section>
-    <!-- Coastal Forecast (India-only coastal belt) -->
-<section id="coastal-forecast" class="coastal-forecast-section">
-  <div class="coastal-forecast-container">
-    <h2 class="section-title">Coastal Threat Forecast (India)</h2>
-
-    <!-- Top stats -->
-    <div class="cf-stats">
-      <div class="cf-stat">
-        <div class="cf-number" id="cfForecastCount">0</div>
-        <div class="cf-label">Coastal Threat Forecast</div>
-      </div>
-      <div class="cf-stat">
-        <div class="cf-number" id="cfPopulationAtRisk">0</div>
-        <div class="cf-label">Population at Risk</div>
-      </div>
-      <div class="cf-stat">
-        <div class="cf-number" id="cfDaysWindow">0</div>
-        <div class="cf-label">Forecast Window (days)</div>
-      </div>
-    </div>
-
-    <!-- Map + legend -->
-    <div class="cf-map-wrap">
-      <!-- Lightweight SVG outline of India with highlighted coasts -->
-      <svg class="india-map" viewBox="0 0 700 800" aria-label="India Coastal Forecast Map">
-        <!-- Simple land silhouette (stylized) -->
-        <path class="land"
-          d="M 410 50 L 510 140 L 520 210 L 560 260 L 590 320 L 560 360 L 500 420 L 510 470 L 490 520 L 450 560 L 460 610 L 430 650 L 360 680 L 300 650 L 260 590 L 220 540 L 200 480 L 220 430 L 230 370 L 210 320 L 220 280 L 260 240 L 310 200 L 360 150 Z"
-        />
-        <!-- West coast band -->
-        <path class="coast west"
-          d="M 230 370 L 210 320 L 220 280 L 260 240 L 310 200 L 330 220 L 300 250 L 280 280 L 260 330 L 255 360 Z"
-        />
-        <!-- East coast band -->
-        <path class="coast east"
-          d="M 520 210 L 560 260 L 590 320 L 560 360 L 500 420 L 510 470 L 490 520 L 470 510 L 480 460 L 520 400 L 545 360 L 560 330 L 540 290 L 510 250 Z"
-        />
-        <!-- Bay of Bengal markers -->
-        <g id="cfMarkers"></g>
-      </svg>
-
-      <div class="cf-legend">
-        <span><i class="dot high"></i> High</span>
-        <span><i class="dot med"></i> Medium</span>
-        <span><i class="dot low"></i> Low</span>
-      </div>
-    </div>
-
-    <!-- Historical events table -->
-    <div class="cf-history">
-      <div class="cf-history-head">
-        <h3>Historical Coastal Events</h3>
-        <small>Source: demo data for hackathon view</small>
-      </div>
-      <table class="cf-table" id="cfHistoryTable" aria-label="Historical coastal events">
-        <thead>
-          <tr>
-            <th>#</th><th>Event</th><th>Region</th><th>Date/Window</th><th>Severity</th><th>Status</th>
-          </tr>
-        </thead>
-        <tbody><!-- filled by JS --></tbody>
-      </table>
+    <section id="coastal-risk" class="coastal-risk">
+  <div class="cr-header">
+    <h2>India Coastal Threat & Forecast</h2>
+    <div class="cr-search">
+      <input id="crPincode" type="text" inputmode="numeric" maxlength="6" placeholder="Enter PIN code (e.g., 560001)" />
+      <button id="crFindBtn">Check</button>
+      <small class="cr-hint">Click on the map or search by PIN code. Coastal-only focus.</small>
     </div>
   </div>
+
+  <div class="cr-grid">
+    <div class="cr-map-card">
+      <div id="crMap" class="cr-map" aria-label="Coastal map of India"></div>
+      <div class="cr-legend">
+        <span><i class="dot dot-safe"></i>Safe</span>
+        <span><i class="dot dot-watch"></i>Watch</span>
+        <span><i class="dot dot-alert"></i>Alert</span>
+      </div>
+    </div>
+
+    <aside class="cr-side">
+      <div class="cr-panel">
+        <div class="cr-location">
+          <h3 id="crPlace">Pick a coastal point…</h3>
+          <div id="crStatus" class="badge badge-muted">—</div>
+        </div>
+        <ul class="cr-kpis">
+          <li><span>Forecast Window</span><strong id="crWindow">7 days</strong></li>
+          <li><span>Nearest Coast</span><strong id="crNearest">—</strong></li>
+          <li><span>Est. Pop. at Risk</span><strong id="crPop">—</strong></li>
+        </ul>
+      </div>
+
+      <div class="cr-panel">
+        <h4>7-Day Coastal Forecast</h4>
+        <table class="cr-table" id="crForecastTable">
+          <thead><tr><th>Day</th><th>Risk</th><th>Drivers</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="cr-panel">
+        <h4>Historical Events (training cues)</h4>
+        <table class="cr-table" id="crHistoryTable">
+          <thead><tr><th>Date</th><th>Event</th><th>Notes</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </aside>
+  </div>
 </section>
+
 
     <!-- Interactive Dashboard -->
     <section id="dashboard" class="dashboard-section">
@@ -558,6 +553,14 @@
             <button class="cta-button" onclick="closeModal()">Acknowledge</button>
         </div>
     </div>
+    
+    <!-- Leaflet JS -->
+    <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+    ></script>
+
 
     <script src="script.js"></script>
 </body>
