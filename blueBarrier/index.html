@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BlueBarrier - Coastal Threat Monitoring Platform</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Leaflet CSS -->
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin=""
+/>
+
 </head>
 <body>
     <!-- Header -->
@@ -13,11 +21,10 @@
             <div class="logo">BLUE BARRIER</div>
             <ul class="nav-links">
                 <li><a href="#home">HOME</a></li>
-                <li><a href="#service">SERVICE</a></li>
                 <li><a href="#about">ABOUT</a></li>
                 <li><a href="#news">NEWS</a></li>
             </ul>
-            <a href="#login" class="login-btn">LOGIN</a>
+            <a href="./login.html" class="login-btn">LOGIN</a>
             <div class="mobile-menu-toggle">
                 <span></span>
                 <span></span>
@@ -205,6 +212,58 @@
             </div>
         </div>
     </section>
+    <section id="coastal-risk" class="coastal-risk">
+  <div class="cr-header">
+    <h2>India Coastal Threat & Forecast</h2>
+    <div class="cr-search">
+      <input id="crPincode" type="text" inputmode="numeric" maxlength="6" placeholder="Enter PIN code (e.g., 560001)" />
+      <button id="crFindBtn">Check</button>
+      <small class="cr-hint">Click on the map or search by PIN code. Coastal-only focus.</small>
+    </div>
+  </div>
+
+  <div class="cr-grid">
+    <div class="cr-map-card">
+      <div id="crMap" class="cr-map" aria-label="Coastal map of India"></div>
+      <div class="cr-legend">
+        <span><i class="dot dot-safe"></i>Safe</span>
+        <span><i class="dot dot-watch"></i>Watch</span>
+        <span><i class="dot dot-alert"></i>Alert</span>
+      </div>
+    </div>
+
+    <aside class="cr-side">
+      <div class="cr-panel">
+        <div class="cr-location">
+          <h3 id="crPlace">Pick a coastal point…</h3>
+          <div id="crStatus" class="badge badge-muted">—</div>
+        </div>
+        <ul class="cr-kpis">
+          <li><span>Forecast Window</span><strong id="crWindow">7 days</strong></li>
+          <li><span>Nearest Coast</span><strong id="crNearest">—</strong></li>
+          <li><span>Est. Pop. at Risk</span><strong id="crPop">—</strong></li>
+        </ul>
+      </div>
+
+      <div class="cr-panel">
+        <h4>7-Day Coastal Forecast</h4>
+        <table class="cr-table" id="crForecastTable">
+          <thead><tr><th>Day</th><th>Risk</th><th>Drivers</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="cr-panel">
+        <h4>Historical Events (training cues)</h4>
+        <table class="cr-table" id="crHistoryTable">
+          <thead><tr><th>Date</th><th>Event</th><th>Notes</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </aside>
+  </div>
+</section>
+
 
     <!-- Interactive Dashboard -->
     <section id="dashboard" class="dashboard-section">
@@ -494,6 +553,14 @@
             <button class="cta-button" onclick="closeModal()">Acknowledge</button>
         </div>
     </div>
+    
+    <!-- Leaflet JS -->
+    <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+    ></script>
+
 
     <script src="script.js"></script>
 </body>

@@ -313,6 +313,102 @@
       navLinks.style.boxShadow = '0 10px 32px rgba(0,0,0,.35)';
     });
   }
+  /* ---------- Coastal Forecast (India) block ---------- */
+(function(){
+  const fmt = (n)=> (typeof n==='number' ? n.toLocaleString('en-IN') : n);
+
+  // Demo forecast data (coastal-only)
+  const COAST_FORECAST = {
+    windowDays: 3,
+    forecastCount: 6,
+    populationAtRisk: 20000000,
+    markers: [
+      { top: 0.62, left: 0.28, band:'low',  title:'Kerala Backwaters – Low' },
+      { top: 0.66, left: 0.33, band:'med',  title:'Mangalore – Medium' },
+      { top: 0.72, left: 0.45, band:'med',  title:'Mumbai Coast – Medium' },
+      { top: 0.50, left: 0.74, band:'high', title:'Odisha/Sundarbans – High' },
+      { top: 0.58, left: 0.68, band:'med',  title:'Chennai Coast – Medium' },
+      { top: 0.56, left: 0.60, band:'low',  title:'Puducherry – Low' }
+    ],
+    history: [
+      { id:1, event:'Storm Surge', region:'Sundarbans Delta', when:'Last 24H', sev:'high', status:'Open' },
+      { id:2, event:'High Flood Risk', region:'Chennai Coast', when:'48H', sev:'med', status:'Monitoring' },
+      { id:3, event:'Coastal Erosion', region:'Kochi', when:'7d', sev:'low', status:'Resolved' }
+    ]
+  };
+
+  /* 1) Paint headline numbers */
+  const elForecast = document.getElementById('cfForecastCount');
+  const elPop      = document.getElementById('cfPopulationAtRisk');
+  const elWindow   = document.getElementById('cfDaysWindow');
+  if (elForecast && elPop && elWindow) {
+    elForecast.textContent = fmt(COAST_FORECAST.forecastCount);
+    elPop.textContent      = fmt(COAST_FORECAST.populationAtRisk);
+    elWindow.textContent   = fmt(COAST_FORECAST.windowDays);
+  }
+
+  /* 2) Markers on SVG (normalized positions) */
+  const g = document.getElementById('cfMarkers');
+  if (g) {
+    COAST_FORECAST.markers.forEach(m => {
+      const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c.setAttribute('r','6');
+      c.setAttribute('cx', String(700 * m.left));
+      c.setAttribute('cy', String(800 * m.top));
+      c.setAttribute('class', `cf-marker ${m.band}`);
+      c.setAttribute('data-info', m.title);
+      c.addEventListener('mouseenter', (e)=> {
+        const t = document.getElementById('tooltip');
+        if (!t) return;
+        t.style.display='block';
+        t.textContent = m.title;
+        t.style.left = e.clientX + 'px';
+        t.style.top  = e.clientY + 'px';
+      });
+      c.addEventListener('mousemove', (e)=> {
+        const t = document.getElementById('tooltip');
+        if (!t) return;
+        t.style.left = e.clientX + 'px';
+        t.style.top  = e.clientY + 'px';
+      });
+      c.addEventListener('mouseleave', ()=> {
+        const t = document.getElementById('tooltip');
+        if (t) t.style.display='none';
+      });
+      c.addEventListener('click', ()=> {
+        if (window.openModal) window.openModal('Threat Details', m.title + ' (forecast window: ' + COAST_FORECAST.windowDays + ' days)');
+      });
+      g.appendChild(c);
+    });
+  }
+
+  /* 3) History table */
+  const tbody = document.querySelector('#cfHistoryTable tbody');
+  if (tbody) {
+    tbody.innerHTML = '';
+    COAST_FORECAST.history.forEach(row => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${row.id}</td>
+        <td>${row.event}</td>
+        <td>${row.region}</td>
+        <td>${row.when}</td>
+        <td><span class="cf-badge ${row.sev}">${row.sev.toUpperCase()}</span></td>
+        <td>${row.status}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  /* 4) Make sure NO SQL-injection alerts show inside any section */
+  document.querySelectorAll('.alert-item .alert-message').forEach(msg => {
+    if (msg.textContent.toLowerCase().includes('sql injection')) {
+      const card = msg.closest('.alert-item');
+      if (card) card.remove();
+    }
+  });
+})();
+
 
   /* ------------------- 13) Hero progressive fade ---------------- */
   // Progressive reveal for elements with .fade-in as they enter viewport
