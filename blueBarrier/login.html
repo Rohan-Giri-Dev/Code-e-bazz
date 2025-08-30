@@ -1,0 +1,261 @@
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <title>Flood Alert System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="login.css">
+
+
+
+</head>
+<body>
+    <div class="bg-image"></div>
+    <div class="bg-blur"></div>
+    <div class="bg-blur2"></div>
+    <!-- Menu Bar (Hamburger) -->
+    <nav class="menu-bar" id="mainMenu" style="display: flex;">
+        <div class="menu-title"></div>
+        <button class="hamburger" id="hamburgerBtn" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <div class="menu-items" id="menuItems" style="display: none;">
+            <button class="menu-btn active" id="menuHome">Home</button>
+            <button class="menu-btn" id="menuAccuracy">Accuracy</button>
+            <button class="menu-btn" id="menuHelp">Map Center</button>
+        </div>
+    </nav>
+    <!-- Login Note -->
+    <div class="login-note">
+        <span>🔒 Please login to get exact flood information from the website.</span>
+    </div>
+    <!-- NGO Login Form (move this OUTSIDE homePage and keep display:flex by default) -->
+    <form class="login-form" id="ngoLoginForm" style="display: none; flex-direction: column; align-items: center; gap: 18px; margin: 80px auto 0px; background: rgba(255, 255, 255, 0.22); border-radius: 40px; box-shadow: rgba(33, 147, 176, 0.1) 0px 4px 24px; padding: 32px; width: 100%; max-width: 480px;">
+        <h3 style="color:#2193b0; margin-bottom:10px;">NGO Login</h3>
+        <label for="ngoName" style="font-weight:600; color:#2193b0; align-self: flex-start;">NGO Name</label>
+        <input type="text" placeholder="NGO Name" class="login-input oval-input" id="ngoName" required="">
+        <label for="ngoAddress" style="font-weight:600; color:#2193b0; align-self: flex-start;">Address</label>
+        <input type="text" placeholder="Address" class="login-input oval-input" id="ngoAddress" required="">
+        <label for="ngoPincode" style="font-weight:600; color:#2193b0; align-self: flex-start;">Pincode</label>
+        <input type="text" placeholder="Pincode" class="login-input oval-input" id="ngoPincode" required="" pattern="\d{6}">
+        <label for="ngoCity" style="font-weight:600; color:#2193b0; align-self: flex-start;">City/Village</label>
+        <input type="text" placeholder="City/Village" class="login-input oval-input" id="ngoCity" required="">
+        <label for="ngoLicense" style="font-weight:600; color:#2193b0; align-self: flex-start;">NGO License Number</label>
+        <input type="text" placeholder="NGO License Number" class="login-input oval-input" id="ngoLicense" required="">
+        <label for="ngoPhone" style="font-weight:600; color:#2193b0; align-self: flex-start;">NGO Phone Number</label>
+        <input type="text" placeholder="NGO Phone Number" class="login-input oval-input" id="ngoPhone" required="" pattern="\d{10}">
+        <button type="submit" class="btn" style="margin-top:10px; padding:10px 32px;">Login</button>
+    </form>
+    <!-- Home Page -->
+    <div class="container" id="homePage" style="display: block;">
+        <h1>
+            <span class="icon">🌊</span>
+            <span class="title-gradient">Flood Alert System</span>
+        </h1>
+        <p class="desc">
+            <span class="highlight">Stay informed and safe.</span><br>
+            Get <span class="highlight">real-time flood alerts</span> for your area.
+        </p>
+        <button class="btn pulse" id="checkFloodBtn">Check Flood Status</button>
+        <div id="ngoWelcome" style="display:none; margin:32px 0 0 0; font-size:1.2rem; color:#2193b0; font-weight:600;"></div>
+        <div class="info">
+            <span class="info-icon">⛅</span>
+            Powered by your local weather data.
+        </div>
+    </div>
+    <!-- Accuracy Page -->
+    <div class="card" id="accuracyPage" style="display: none;">
+        <img class="img-icon" src="https://cdn-icons-png.flaticon.com/512/728/728093.png" alt="Flood Icon">
+        <h2>Flood Alert Accuracy</h2>
+        <div class="accuracy">97.8%</div>
+        <div class="desc-acc">
+            Our system uses advanced data and AI to provide highly accurate flood alerts for your safety.
+        </div>
+        <div class="flood-types">
+            <h3 style="color:#2193b0; margin-bottom:10px;">Select Disaster Type:</h3>
+            <div id="disasterBtns" style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:20px;">
+                <button class="dis-btn" data-type="River Flood">🌊 River Flood</button>
+                <button class="dis-btn" data-type="Flash Flood">🌧️ Flash Flood</button>
+                <button class="dis-btn" data-type="Coastal Flood">🌪️ Coastal Flood</button>
+                <button class="dis-btn" data-type="Tsunami Flood">🌋 Tsunami Flood</button>
+                <button class="dis-btn" data-type="Urban Flood">🌁 Urban Flood</button>
+            </div>
+            <div id="disasterInfo" style="margin-top:10px; font-size:1.08em; color:#2193b0; font-weight:600;"></div>
+        </div>
+        <button class="back-btn" id="backBtn">Back to Home</button>
+    </div>
+    <!-- Map Center Page -->
+    <div class="card" id="helpPage" style="display: none;">
+        <h2>Map Center</h2>
+        <div class="desc-acc" style="margin-bottom:32px;">
+            <span style="color:#2193b0;">Below is the map of India. You can zoom and pan to explore.</span>
+        </div>
+        <div style="width:100%; height:350px; border-radius:12px; overflow:hidden; box-shadow:0 2px 12px rgba(33,147,176,0.12);">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14268.98281289567!2d78.9629!3d20.5937!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bd6dd6e8e8e8e8e%3A0x8e8e8e8e8e8e8e!2sIndia!5e0!3m2!1sen!2sin!4v1693400000000!5m2!1sen!2sin" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+        </div>
+    </div>
+    <div id="ngoWelcomeTop" style="display: block; position: fixed; top: 16px; left: 16px; background: rgba(255, 255, 255, 0.85); color: rgb(33, 147, 176); font-size: 1.1rem; font-weight: 600; padding: 10px 28px; border-radius: 30px; box-shadow: rgba(33, 147, 176, 0.12) 0px 2px 12px; z-index: 100; transition: left 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);">Hello GLS NGO!</div>
+    <script>
+        const homePage = document.getElementById('homePage');
+        const accuracyPage = document.getElementById('accuracyPage');
+        const helpPage = document.getElementById('helpPage');
+        const menuHome = document.getElementById('menuHome');
+        const menuAccuracy = document.getElementById('menuAccuracy');
+        const menuHelp = document.getElementById('menuHelp');
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const menuItems = document.getElementById('menuItems');
+
+        // Hamburger menu toggle
+        hamburgerBtn.onclick = function() {
+            menuItems.style.display = menuItems.style.display === 'flex' ? 'none' : 'flex';
+        };
+
+        // Hide menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!hamburgerBtn.contains(e.target) && !menuItems.contains(e.target)) {
+                menuItems.style.display = 'none';
+            }
+        });
+
+        // Utility to show/hide all main content except login
+        function hideAllExceptLogin() {
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('homePage').style.display = 'none';
+            document.getElementById('accuracyPage').style.display = 'none';
+            document.getElementById('helpPage').style.display = 'none';
+            document.getElementById('ngoLoginForm').style.display = 'flex';
+            document.getElementById('ngoWelcomeTop').style.display = 'none';
+        }
+        function showMainContent() {
+            document.getElementById('mainMenu').style.display = 'flex';
+            document.getElementById('homePage').style.display = 'block';
+            document.getElementById('ngoLoginForm').style.display = 'none';
+            moveWelcomeTop();
+        }
+        function moveWelcomeTop() {
+            const ngoName = sessionStorage.getItem('ngoName');
+            const welcomeTop = document.getElementById('ngoWelcomeTop');
+            if (ngoName) {
+                welcomeTop.textContent = `Hello ${ngoName} NGO!`;
+                welcomeTop.style.display = 'block';
+                setTimeout(() => {
+                    welcomeTop.style.left = '16px';
+                }, 100);
+            } else {
+                welcomeTop.style.display = 'none';
+                welcomeTop.style.left = '-300px';
+            }
+        }
+        function checkNgoSession() {
+            const ngoName = sessionStorage.getItem('ngoName');
+            if (ngoName) {
+                showMainContent();
+            } else {
+                hideAllExceptLogin();
+            }
+        }
+        document.getElementById('ngoLoginForm').onsubmit = function(e) {
+            e.preventDefault();
+            // Get values
+            const ngoName = document.getElementById('ngoName').value.trim();
+            const ngoAddress = document.getElementById('ngoAddress').value.trim();
+            const ngoPincode = document.getElementById('ngoPincode').value.trim();
+            const ngoCity = document.getElementById('ngoCity').value.trim();
+            const ngoLicense = document.getElementById('ngoLicense').value.trim();
+            const ngoPhone = document.getElementById('ngoPhone').value.trim();
+
+            // Validate all fields
+            if (!ngoName || !ngoAddress || !ngoPincode || !ngoCity || !ngoLicense || !ngoPhone) {
+                alert('All fields are required.');
+                return false;
+            }
+            if (!/^\d{6}$/.test(ngoPincode)) {
+                alert('Pincode must be 6 digits.');
+                return false;
+            }
+            if (!/^\d{10}$/.test(ngoPhone)) {
+                alert('Phone number must be 10 digits.');
+                return false;
+            }
+            // Save NGO name in sessionStorage
+            sessionStorage.setItem('ngoName', ngoName);
+            showMainContent();
+            return false;
+        };
+
+        // Navigation logic
+        menuHome.onclick = function() {
+            homePage.style.display = 'block';
+            accuracyPage.style.display = 'none';
+            helpPage.style.display = 'none';
+            menuHome.classList.add('active');
+            menuAccuracy.classList.remove('active');
+            menuHelp.classList.remove('active');
+            menuItems.style.display = 'none';
+            moveWelcomeTop();
+        };
+        menuAccuracy.onclick = function() {
+            homePage.style.display = 'none';
+            accuracyPage.style.display = 'block';
+            helpPage.style.display = 'none';
+            menuHome.classList.remove('active');
+            menuAccuracy.classList.add('active');
+            menuHelp.classList.remove('active');
+            menuItems.style.display = 'none';
+            moveWelcomeTop();
+        };
+        menuHelp.onclick = function() {
+            homePage.style.display = 'none';
+            accuracyPage.style.display = 'none';
+            helpPage.style.display = 'block';
+            menuHome.classList.remove('active');
+            menuAccuracy.classList.remove('active');
+            menuHelp.classList.add('active');
+            menuItems.style.display = 'none';
+            moveWelcomeTop();
+        };
+        document.getElementById('checkFloodBtn').onclick = function() {
+            homePage.style.display = 'none';
+            accuracyPage.style.display = 'block';
+            menuHome.classList.remove('active');
+            menuAccuracy.classList.add('active');
+            menuHelp.classList.remove('active');
+            moveWelcomeTop();
+        };
+        document.getElementById('backBtn').onclick = function() {
+            accuracyPage.style.display = 'none';
+            homePage.style.display = 'block';
+            menuHome.classList.add('active');
+            menuAccuracy.classList.remove('active');
+            menuHelp.classList.remove('active');
+            moveWelcomeTop();
+        };
+        const disasterDescriptions = {
+            "River Flood": "River floods occur when water levels rise over the top of river banks due to heavy rain or melting snow.",
+            "Flash Flood": "Flash floods are sudden and intense floods caused by heavy rainfall in a short period, often in urban or mountainous areas.",
+            "Coastal Flood": "Coastal floods happen when seawater inundates land due to storms, high tides, or tsunamis.",
+            "Tsunami Flood": "Tsunami floods are caused by large ocean waves generated by underwater earthquakes or volcanic eruptions.",
+            "Urban Flood": "Urban floods occur in cities due to poor drainage systems, heavy rainfall, or blocked waterways."
+        };
+        document.querySelectorAll('.dis-btn').forEach(btn => {
+            btn.onclick = function() {
+                document.querySelectorAll('.dis-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const type = btn.getAttribute('data-type');
+                document.getElementById('disasterInfo').textContent = disasterDescriptions[type];
+            };
+        });
+        function showNgoWelcome(name) {
+            document.getElementById('ngoLoginForm').style.display = 'none';
+            document.getElementById('mainMenu').style.display = 'flex';
+            document.getElementById('homePage').style.display = 'block';
+            moveWelcomeTop();
+        }
+        // Call on page load
+        checkNgoSession();
+        moveWelcomeTop();
+    </script>
+
+</body></html>
